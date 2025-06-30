@@ -1,0 +1,13 @@
+# This file will automatically update with entries for new content after a build and reload
+
+Items: {
+	BossRush: {
+		DisplayName: Boss Rush
+		Tooltip: ""
+	}
+
+	KillEverythingDead: {
+		DisplayName: Kill Everything Dead
+		Tooltip: ""
+	}
+}
