@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using BossRush.Systems;
+using log4net;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using SteelSeries.GameSense;
@@ -55,15 +56,15 @@ namespace BossRush
                     x => x.MatchLdcI4(0),
                     x => x.MatchLdelemR4(),
                     x => x.MatchLdcR4(0)
-					
+
                 );
-                
+
                 ILLabel afterDespawnCheck = cursor.MarkLabel();
                 cursor.GotoLabel(daytimeCheck, MoveType.AfterLabel);
 
                 cursor.EmitDelegate(static () =>
                 {
-                    return BossRushSystem.isBossRushMode;
+                    return ModContent.GetInstance<BossRushSystem>().isBossRushMode;
                 });
                 cursor.EmitBrtrue(afterDespawnCheck);
                 if (DEBUG)
@@ -72,7 +73,7 @@ namespace BossRush
                     Logger.Debug($"Writing IL after adding EoC code to: {path} ");
                     File.WriteAllText(path, il.ToString());
                 }
-                
+
             };
         }
     }

@@ -1,13 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Terraria.ModLoader;
+using System.Security.Principal;
+using BossRush.utils;
+using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.ID;
-using Terraria.Audio;
-
+using Terraria.ModLoader;
 
 namespace BossRush.Systems
 {
@@ -38,44 +38,91 @@ namespace BossRush.Systems
             NPCID.CultistBoss,
             NPCID.MoonLordCore
         };
-        private readonly long[] allBosses;
-        public static bool isBossRushMode = false;
+        public readonly long[] allBosses = [];
+        public bool isBossRushMode { get; private set; } = false;
         private Player _playerWhoSummoned;
+        private Vector2 whereSummoned;
+        private const int farthestPlayerCanBeAwayToParticipate = 10000;
+        private long currentBossIndex = 0;
 
         // can't initalize the allBosses array immediatly because .AddRange() doesn't return an instance of the list.
-        BossRushSystem(Player player)
+        BossRushSystem()
         {
             var temp = allBosses.ToList();
             temp.AddRange(preharmodeBosses);
             temp.AddRange(hardmodeBosses);
             allBosses = temp.ToArray();
-            _playerWhoSummoned = player;
         }
 
-
-        public static void StartBossRush(Player player)
+        public void StartBossRush(Player player)
         {
             if (isBossRushMode)
             {
                 Main.NewText("What the hell are you doing??!?");
                 player.KillMe(PlayerDeathReason.ByCustomReason($"{player.name}"), 99999, 2, true);
-                BossRushSystem.isBossRushMode = false;
+                isBossRushMode = false;
                 return;
             }
-            
+            isBossRushMode = true;
+            _playerWhoSummoned = player;
+            whereSummoned = _playerWhoSummoned.Center;
+            SummonBoss(allBosses[currentBossIndex]);
         }
-        private void SummonBoss(Player player, int bossID)
+        public void SummonNextBoss()
+        {
+            currentBossIndex++;
+            SummonBoss(allBosses[currentBossIndex]);
+        }
+        private void SummonBoss(long bossID)
         {
             SoundEngine.PlaySound(SoundID.Roar);
             isBossRushMode = true;
-            IEntitySource entitySource = new EntitySource_Parent(player);
             int[] validPlayerIndexes = GetPlayerIndexesWithinBossRushRange();
-            int chosesPlayerIndex = validPlayerIndexes[Random.Shared.Next(validPlayerIndexes.Length)];
-            NPC.SpawnBoss((int)player.position.X + 300, (int)player.position.Y + 300, bossID, chosesPlayerIndex);
-            
+            if (!validPlayerIndexes.Any())
+            {
+                throw new NoPlayersInRangeException();
+            }
+            int chosesPlayerIndex = validPlayerIndexes[
+                Random.Shared.Next(validPlayerIndexes.Length)
+            ];
+            Player player = Main.player[chosesPlayerIndex];
+            NPC.SpawnBoss(
+                (int)player.GetValidBossSpawnPostion().ToWorldCoordinates().X,
+                (int)player.GetValidBossSpawnPostion().ToWorldCoordinates().Y,
+                (int)bossID,
+                chosesPlayerIndex
+            );
         }
-        private int[] GetPlayerIndexesWithinBossRushRange() {
-            return null;
+
+        /// <summary>
+        /// Get the index of the players within the range of the boss rush event
+        /// </summary>
+        /// <returns>A list of the indexes or null if none of the players are in the range of the boss rush</returns>
+#pragma warning disable CS8632
+        private int[]? GetPlayerIndexesWithinBossRushRange()
+        {
+            int[] goodPlayers = [];
+            int i = 0; // index
+            foreach (Player player in Main.player)
+            {
+                if (Main.player.Last() == player) // the dummy entry
+                {
+                    break;
+                }
+                if (!player.dead && player.active)
+                {
+                    if (
+                        player.position.Distance(whereSummoned)
+                        < farthestPlayerCanBeAwayToParticipate
+                    )
+                    {
+                        goodPlayers = goodPlayers.Append(player.whoAmI).ToArray();
+                        i++;
+                    }
+                }
+            }
+            return goodPlayers;
         }
+#pragma warning restore CS8632
     }
 }
