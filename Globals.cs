@@ -16,6 +16,7 @@ namespace BossRush
             "FOobar",
             "Bar foo"
         ];
+        public static int timesDiedToBossRush;
         public static string rdmBossRushQuote
         {
             get { return bossRushQuotes[new Random().Next(0, bossRushQuotes.Length)]; }

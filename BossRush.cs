@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using BossRush.Systems;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using SteelSeries.GameSense;
@@ -16,7 +17,6 @@ namespace BossRush
         private const bool DEBUG = true;
         public override void Load()
         {
-            
             IL_NPC.VanillaAI_Inner += il =>
             {
                 ILCursor cursor = new(il);
@@ -63,7 +63,7 @@ namespace BossRush
 
                 cursor.EmitDelegate(static () =>
                 {
-                    return Globals.isBossRushMode;
+                    return BossRushSystem.isBossRushMode;
                 });
                 cursor.EmitBrtrue(afterDespawnCheck);
                 if (DEBUG)

@@ -2,8 +2,8 @@
 
 Items: {
 	BossRush: {
-		DisplayName: Boss Rush
-		Tooltip: ""
+		DisplayName: Suspicious looking item
+		Tooltip: "'*Take 2 pills, with food twice a day*'"
 	}
 
 	KillEverythingDead: {
