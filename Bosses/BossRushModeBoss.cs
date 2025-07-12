@@ -4,14 +4,15 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
+
 namespace BossRush.Bosses
 {
     public class BossRushModeBoss : GlobalNPC
     {
-        private BossRushSystem bossRushSystem => ModContent.GetInstance<BossRushSystem>();
+        private BossRushSystem BossRushSystem => ModContent.GetInstance<BossRushSystem>();
         public override void SetDefaults(NPC npc)
         {
-            if (bossRushSystem.isBossRushMode)
+            if (BossRushSystem.IsBossRushMode)
             {
                 switch (npc.type)
                 {
@@ -19,6 +20,7 @@ namespace BossRush.Bosses
                         npc.scale = 10;
                         goto case NPCID.EyeofCthulhu;
                     case NPCID.EyeofCthulhu:
+                        
                         npc.lifeMax *= 30;
                         npc.damage *= 10;
                         break;
@@ -36,10 +38,14 @@ namespace BossRush.Bosses
         public override void OnKill(NPC npc)
         {
             base.OnKill(npc);
-            if (bossRushSystem.allBosses.Contains(npc.type))
+            if (BossRushSystem.allBosses.Contains(npc.type))
             {
-                bossRushSystem.SummonNextBoss();
+                BossRushSystem.SummonNextBoss();
             }
+        }
+        public override void ModifyNPCLoot(NPC npc, NPCLoot npcLoot)
+        {
+            base.ModifyNPCLoot(npc, npcLoot);
         }
     }
 }

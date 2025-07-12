@@ -1,11 +1,10 @@
 using System;
 using System.Linq;
-using System.Security.Principal;
 using BossRush.utils;
 using Microsoft.Xna.Framework;
+using SubworldLibrary;
 using Terraria;
 using Terraria.Audio;
-using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -13,14 +12,20 @@ namespace BossRush.Systems
 {
     public class BossRushSystem : ModSystem
     {
+        public readonly long[] banndedItems =
+        [
+            ItemID.EmpressFlightBooster, // soaring insignia
+            ItemID.RodOfHarmony
+        ];
+        public BossRushPhase Phase { get; private set; }
         private static readonly long[] preharmodeBosses =
         {
             NPCID.KingSlime,
             NPCID.EyeofCthulhu,
             NPCID.Deerclops,
             NPCID.QueenBee,
-            NPCID.EaterofWorldsHead,
             NPCID.BrainofCthulhu,
+            NPCID.EaterofWorldsHead,
             NPCID.SkeletronHead,
             NPCID.WallofFlesh
         };
@@ -39,11 +44,18 @@ namespace BossRush.Systems
             NPCID.MoonLordCore
         };
         public readonly long[] allBosses = [];
-        public bool isBossRushMode { get; private set; } = false;
+        public bool IsBossRushMode { get; private set; } = false;
         private Player _playerWhoSummoned;
         private Vector2 whereSummoned;
         private const int farthestPlayerCanBeAwayToParticipate = 10000;
         private long currentBossIndex = 0;
+
+        // this is in 24 hour time
+        public TimeSpan buildSecondsRemaining { get; private set; }
+
+        public DateTime StartTime { get; private set; }
+        public DateTime EndTime { get; private set; }
+        private const int PREPARATION_SECONDS = 5 * 60; // five minutes
 
         // can't initalize the allBosses array immediatly because .AddRange() doesn't return an instance of the list.
         BossRushSystem()
@@ -54,31 +66,73 @@ namespace BossRush.Systems
             allBosses = temp.ToArray();
         }
 
-        public void StartBossRush(Player player)
+        public void UpdateTimeRemaining()
         {
-            if (isBossRushMode)
-            {
-                Main.NewText("What the hell are you doing??!?");
-                player.KillMe(PlayerDeathReason.ByCustomReason($"{player.name}"), 99999, 2, true);
-                isBossRushMode = false;
-                return;
-            }
-            isBossRushMode = true;
-            _playerWhoSummoned = player;
-            whereSummoned = _playerWhoSummoned.Center;
-            SummonBoss(allBosses[currentBossIndex]);
+            
+            BossRush.logger.Debug($"Starttime: {StartTime.TimeOfDay}, End time: {EndTime.TimeOfDay}, Now: {DateTime.Now.TimeOfDay.Seconds}");
+
+            
+            buildSecondsRemaining = (EndTime.TimeOfDay - DateTime.Now.TimeOfDay);
+
+            
+
+            BossRush.logger.Debug(buildSecondsRemaining);
         }
+
+        public void StartBossRush()
+        {
+            if (IsBossRushMode)
+            {
+                throw new Exception("Boss rush already started");
+            }
+            Phase = BossRushPhase.Build;
+            IsBossRushMode = true;
+            _playerWhoSummoned = Main.player[0];
+            whereSummoned = _playerWhoSummoned.Center;
+            buildSecondsRemaining = new TimeSpan(0, 5, 0);
+            StartTime = DateTime.Now;
+            EndTime = EndTime.Add(
+                StartTime.TimeOfDay.Add(
+                    new TimeSpan(seconds: PREPARATION_SECONDS, minutes: 0, hours: 0)
+                )
+            );
+        }
+
+        public void AdvancePhase()
+        {
+            switch (Phase)
+            {
+                case BossRushPhase.Build:
+                    StartFight();
+                    break;
+                case BossRushPhase.Fight:
+                    EndBossRush();
+                    break;
+            }
+        }
+
+        private void StartFight()
+        {
+            SummonBoss(allBosses[0]);
+        }
+
+        private void EndBossRush()
+        {
+            throw new NotImplementedException();
+        }
+
         public void SummonNextBoss()
         {
             currentBossIndex++;
             SummonBoss(allBosses[currentBossIndex]);
         }
+
         private void SummonBoss(long bossID)
         {
             SoundEngine.PlaySound(SoundID.Roar);
-            isBossRushMode = true;
+            IsBossRushMode = true;
             int[] validPlayerIndexes = GetPlayerIndexesWithinBossRushRange();
-            if (!validPlayerIndexes.Any())
+            if (validPlayerIndexes.Length == 0)
             {
                 throw new NoPlayersInRangeException();
             }
@@ -98,7 +152,6 @@ namespace BossRush.Systems
         /// Get the index of the players within the range of the boss rush event
         /// </summary>
         /// <returns>A list of the indexes or null if none of the players are in the range of the boss rush</returns>
-#pragma warning disable CS8632
         private int[]? GetPlayerIndexesWithinBossRushRange()
         {
             int[] goodPlayers = [];
@@ -123,6 +176,12 @@ namespace BossRush.Systems
             }
             return goodPlayers;
         }
-#pragma warning restore CS8632
+    }
+
+    public enum BossRushPhase
+    {
+        None,
+        Build,
+        Fight
     }
 }

@@ -1,3 +1,4 @@
 displayName = Boss rush
 author = lavender.lotus
 version = 0.5
+modReferences = SubworldLibrary

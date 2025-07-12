@@ -3,9 +3,7 @@ using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ModLoader;
 
-
 namespace BossRush.utils;
-
 
 public static class PlayerUtils
 {
@@ -13,6 +11,7 @@ public static class PlayerUtils
     /// Distance from the player where bosses cannot be spawned
     /// </summary>
     private static readonly Vector2 SafeZone = new(20, 20);
+
     // TODO: Fix BEFORE release
     public static Vector2 GetValidBossSpawnPostion(this Player player)
     {
@@ -25,9 +24,10 @@ public static class PlayerUtils
         while (!foundPos)
         {
             spawnPos =
-            player.Center.ToTileCoordinates().ToVector2()
-            + SafeZone
-            + new Vector2(Random.Shared.Next((int)SafeZone.X * timesSearched)); ;
+                player.Center.ToTileCoordinates().ToVector2()
+                + SafeZone
+                + new Vector2(Random.Shared.Next((int)SafeZone.X * timesSearched));
+            ;
             if (!Main.tile[spawnPos.ToPoint()].HasTile)
             {
                 foundPos = true;

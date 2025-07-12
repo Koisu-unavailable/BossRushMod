@@ -1,9 +1,7 @@
-using BossRush.Systems;
+using BossRush.Subworlds;
+using SubworldLibrary;
 using Terraria;
-using Terraria.Audio;
-using Terraria.DataStructures;
 using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace BossRush.Items
@@ -25,7 +23,7 @@ namespace BossRush.Items
 
         public override bool? UseItem(Player player)
         {
-            ModContent.GetInstance<BossRushSystem>().StartBossRush(player);
+            SubworldSystem.Enter<BossArenaSubworld>();
             return true;
         }
     }
