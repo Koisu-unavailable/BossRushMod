@@ -2,8 +2,8 @@
 
 Items: {
 	BossRush: {
-		DisplayName: Suspicious looking item
-		Tooltip: "'*Take 2 pills, with food twice a day*'"
+		DisplayName: Suspicious looking mushrooms
+		Tooltip: You probably shouldn't eat this...
 	}
 
 	KillEverythingDead: {
@@ -12,4 +12,7 @@ Items: {
 	}
 }
 
-Misc.TimeToBuildArena: Time to build an arena!
+Misc: {
+	TimeToBuildArena: Time to build an arena!
+	overdosed: "{0} took too many {$Mods.BossRush.Items.BossRush.DisplayName}"
+}

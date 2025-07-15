@@ -38,10 +38,13 @@ namespace BossRush.UI
             {
                 text.textSupplier = () =>
                 {
-                    var seconds = ModContent.GetInstance<BossRushSystem>().buildSecondsRemaining;
-                    return $"{seconds.Minutes}:{seconds.Seconds}";
-                    
+                    TimeSpan seconds = ModContent.GetInstance<BossRushSystem>().buildSecondsRemaining;
+                    return $"{seconds.Minutes}:{(seconds.Seconds.ToString().Length == 1 ? '0' + seconds.Seconds : seconds.Seconds)}";
                 };
+            }
+            else
+            {
+                text.textSupplier = () => "";
             }
         }
     }

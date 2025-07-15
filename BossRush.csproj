@@ -9,4 +9,9 @@
       <HintPath>./lib/SubworldLibrary.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="StructureHelper">
+      <HintPath>./lib/StructureHelper.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

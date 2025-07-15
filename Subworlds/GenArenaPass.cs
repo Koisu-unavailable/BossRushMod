@@ -1,6 +1,8 @@
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.IO;
+using Terraria.ModLoader;
 using Terraria.WorldBuilding;
 
 namespace BossRush.Subworlds;
@@ -25,5 +27,12 @@ public class GenArenaPass : GenPass
                 tile.TileType = TileID.Dirt;
             }
         }
+        var structure = StructureHelper.API.Generator.GetStructureData(
+            "Assets/horridArena",
+            ModContent.GetInstance<BossRush>()
+        );
+        
+        var pos = new Point16(Main.spawnTileX - structure.width /2 , Main.spawnTileY - structure.height / 2);
+        StructureHelper.API.Generator.GenerateFromData(structure, pos);
     }
 }

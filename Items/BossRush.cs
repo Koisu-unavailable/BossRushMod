@@ -1,7 +1,9 @@
 using BossRush.Subworlds;
 using SubworldLibrary;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace BossRush.Items
@@ -23,8 +25,23 @@ namespace BossRush.Items
 
         public override bool? UseItem(Player player)
         {
-            SubworldSystem.Enter<BossArenaSubworld>();
-            return true;
+            if (!SubworldSystem.IsActive<BossArenaSubworld>())
+            {
+                SubworldSystem.Enter<BossArenaSubworld>();
+                return true;
+            }
+            else
+            {
+                var reason = new PlayerDeathReason
+                {
+                    CustomReason = Language
+                        .GetText("Mods.BossRush.Misc.overdosed")
+                        .WithFormatArgs(player.name)
+                        .ToNetworkText()
+                };
+                player.KillMe(reason, 999999999, 0);
+                return true;
+            }
         }
     }
 }

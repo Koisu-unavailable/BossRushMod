@@ -52,7 +52,6 @@ namespace BossRush.UI
                 return;
             }
             // internal void InternalDraw(string text, SpriteBatch spriteBatch, Vector2 startPosition, Color color, float rotation, Vector2 origin, ref Vector2 scale, SpriteEffects spriteEffects, float depth)
-            BossRush.logger.Debug($"Text is: {text} ");
             drawMethod.Invoke(
                 font,
                 [
@@ -61,7 +60,7 @@ namespace BossRush.UI
                     pos,
                     color,
                     rotation,
-                    font.MeasureString(text) * Vector2.Zero,
+                    font.MeasureString(text) * Vector2.Zero + new Vector2(0, 0.1f),
                     scale,
                     SpriteEffects.None,
                     1
