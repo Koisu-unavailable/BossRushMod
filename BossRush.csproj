@@ -14,4 +14,9 @@
       <HintPath>./lib/StructureHelper.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Luminance">
+      <HintPath>./lib/Luminance.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

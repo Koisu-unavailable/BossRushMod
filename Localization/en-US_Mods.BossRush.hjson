@@ -15,4 +15,5 @@ Items: {
 Misc: {
 	TimeToBuildArena: Time to build an arena!
 	overdosed: "{0} took too many {$Mods.BossRush.Items.BossRush.DisplayName}"
+	Dizzy: You feel awash with uneasiniess (CHANGE)
 }

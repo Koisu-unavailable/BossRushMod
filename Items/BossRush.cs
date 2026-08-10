@@ -1,10 +1,10 @@
-using BossRush.Subworlds;
 using SubworldLibrary;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
+using BossRush.Systems;
 
 namespace BossRush.Items
 {
@@ -25,9 +25,10 @@ namespace BossRush.Items
 
         public override bool? UseItem(Player player)
         {
-            if (!SubworldSystem.IsActive<BossArenaSubworld>())
+            var bossRushSystem = ModContent.GetInstance<BossRushSystem>();
+            if (!bossRushSystem.IsBossRushMode)
             {
-                SubworldSystem.Enter<BossArenaSubworld>();
+                bossRushSystem.StartBossRush(player);
                 return true;
             }
             else
@@ -39,7 +40,7 @@ namespace BossRush.Items
                         .WithFormatArgs(player.name)
                         .ToNetworkText()
                 };
-                player.KillMe(reason, 999999999, 0);
+                player.KillMe(reason, 2^30, 0);
                 return true;
             }
         }

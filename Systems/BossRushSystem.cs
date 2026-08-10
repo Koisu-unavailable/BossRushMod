@@ -1,17 +1,9 @@
 using System;
-using System.Collections;
 using System.Linq;
-using System.Reflection.Emit;
-using BossRush.Subworlds;
-using BossRush.utils;
-using Humanizer;
-using Microsoft.Xna.Framework;
-using SubworldLibrary;
+using Luminance.Core.Cutscenes;
 using Terraria;
 using Terraria.Audio;
-using Terraria.GameContent;
 using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace BossRush.Systems
@@ -20,8 +12,7 @@ namespace BossRush.Systems
     {
         public readonly long[] banndedItems =
         [
-            ItemID.EmpressFlightBooster, // soaring insignia
-            ItemID.RodOfHarmony
+            ItemID.RodOfHarmony // probably cheating
         ];
         public BossRushPhase Phase { get; private set; }
         private static readonly long[] preharmodeBosses =
@@ -81,9 +72,7 @@ namespace BossRush.Systems
         public DateTime EndTime { get; private set; }
         private const int PREPARATION_SECONDS = 5; // five minutes
         public Player[] Players { private get; set; } = [];
-
-        public Queue playersToSendAway = [];
-
+        public bool fighting => Phase != BossRushPhase.Intro && Phase != BossRushPhase.None;
         public void Reset()
         {
             StartTime = DateTime.MinValue;
@@ -92,82 +81,66 @@ namespace BossRush.Systems
             buildSecondsRemaining = new TimeSpan(0);
             IsBossRushMode = false;
             currentBossIndex = 0;
-            playersToSendAway = [];
             Phase = BossRushPhase.None;
         }
-
-        public void UpdateTimeRemaining()
+        public void StartBossRush(Player summoner)
         {
-            buildSecondsRemaining = EndTime.TimeOfDay - DateTime.Now.TimeOfDay;
-            if (buildSecondsRemaining < TimeSpan.Zero)
+            Phase = BossRushPhase.Intro;
+            Players = Main.player
+                .Where(p => p.active && p.position.Distance(summoner.position) < 500)
+                .ToArray();
+
+            if (Players.Length == 0)
             {
-                AdvancePhase();
+                Players = [summoner];
             }
-        }
 
-        // public override void PostUpdateEverything()
-        // {
-        //     BossRush.logger.Debug($"HERE: {playersToSendAway.Count}");
-        //     if (playersToSendAway.Count != 0)
-        //     {
-        //         SubworldSystem.MovePlayerToMainWorld(((Player)playersToSendAway.Dequeue()).whoAmI);
-        //         BossRush.logger.Debug(playersToSendAway.ToArray().Humanize());
-        //     }
-
-
-
-        // }
-        public void StartBossRush()
-        {
-            Phase = BossRushPhase.Build;
             IsBossRushMode = true;
-            buildSecondsRemaining = new TimeSpan(0, 0, PREPARATION_SECONDS);
-            StartTime = DateTime.Now;
-            EndTime = EndTime.Add(
-                StartTime.TimeOfDay.Add(
-                    new TimeSpan(seconds: PREPARATION_SECONDS, minutes: 0, hours: 0)
-                )
-            );
+            DoIntro();
         }
-
-        public delegate void OnChangePhase(BossRushPhase newPhase);
-        public event OnChangePhase PhaseChangeHandler;
-
-        public void AdvancePhase()
+        public void DoIntro()
         {
-            switch (Phase)
-            {
-                case BossRushPhase.Build:
-                    StartFight();
-                    PhaseChangeHandler?.Invoke(BossRushPhase.Fight);
-                    break;
-                case BossRushPhase.Fight:
-                    EndBossRush();
-                    PhaseChangeHandler?.Invoke(BossRushPhase.End);
-                    break;
-            }
+            var scene = new BossRushIntro();
+            scene.OnCutsceneEnd += StartFight;
+            CutsceneManager.QueueCutscene(scene);
         }
-
         public override void PostUpdateEverything()
         {
-            if (Phase == BossRushPhase.Fight)
+            if (!fighting)
             {
                 foreach (Player p in Players)
                 {
-                    p.ZoneCrimson = true;
-                    
+                    if (allBosses[currentBossIndex] == NPCID.BrainofCthulhu){
+                        p.ZoneCrimson = true;
+                    }
+                    else if (allBosses[currentBossIndex] == NPCID.EaterofWorldsHead){
+                        p.ZoneCorrupt = true;
+                    }
+                    else {
+                        p.ZoneCrimson = false;
+                        p.ZoneCorrupt = false;
+                    }
                 }
+                return;
+            }
+            if (fighting)
+            {
+                Main.dayTime = false;
+                Main.time = Main.nightLength - 1;
             }
         }
 
         private void StartFight()
         {
-            Phase = BossRushPhase.Fight;
+            Phase = BossRushPhase.Fight1;
+
             SummonBoss(allBosses[0]);
         }
 
-        private void EndBossRush()
+        public void EndBossRush()
         {
+            // give them a buff or smth
+            Main.NewText("The hallucinations disisspate");
             Reset();
         }
 
@@ -179,8 +152,14 @@ namespace BossRush.Systems
 
         private void SummonBoss(long bossID)
         {
-            SoundEngine.PlaySound(SoundID.Roar);
+            // SoundEngine.PlaySound(SoundID.Roar);
             IsBossRushMode = true;
+
+            if (Players.Length == 0)
+            {
+                return;
+            }
+
             Player chosenPlayer = Players[Random.Shared.Next(Players.Length)];
             NPC.SpawnOnPlayer(chosenPlayer.whoAmI, (int)bossID);
         }
@@ -189,8 +168,7 @@ namespace BossRush.Systems
     public enum BossRushPhase
     {
         None,
-        Build,
-        Fight,
-        End
+        Intro,
+        Fight1
     }
 }
