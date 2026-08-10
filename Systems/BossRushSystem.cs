@@ -63,7 +63,7 @@ namespace BossRush.Systems
             NPCID.MoonLordCore
         ];
         public bool IsBossRushMode { get; private set; } = false;
-        private long currentBossIndex = 0;
+        public long currentBossIndex {get; private set;} = 0;
 
         // this is in 24 hour time
         public TimeSpan buildSecondsRemaining { get; private set; }
@@ -72,13 +72,16 @@ namespace BossRush.Systems
         public DateTime EndTime { get; private set; }
         private const int PREPARATION_SECONDS = 5; // five minutes
         public Player[] Players { private get; set; } = [];
-        public bool fighting => Phase != BossRushPhase.Intro && Phase != BossRushPhase.None;
+        public bool Fighting => Phase != BossRushPhase.Intro && Phase != BossRushPhase.None;
+        // /// <summary>
+        // /// This is the ID of the NPC that when killed will summon the next boss.
+        // /// E.g. The orginal head of the eate
+        // /// </summary>
+        // public int currentBossID 
         public void Reset()
         {
-            StartTime = DateTime.MinValue;
-            EndTime = DateTime.MinValue;
+            Main.getGoodWorld = false;
             Players = [];
-            buildSecondsRemaining = new TimeSpan(0);
             IsBossRushMode = false;
             currentBossIndex = 0;
             Phase = BossRushPhase.None;
@@ -106,24 +109,12 @@ namespace BossRush.Systems
         }
         public override void PostUpdateEverything()
         {
-            if (!fighting)
+            if (!Fighting)
             {
-                foreach (Player p in Players)
-                {
-                    if (allBosses[currentBossIndex] == NPCID.BrainofCthulhu){
-                        p.ZoneCrimson = true;
-                    }
-                    else if (allBosses[currentBossIndex] == NPCID.EaterofWorldsHead){
-                        p.ZoneCorrupt = true;
-                    }
-                    else {
-                        p.ZoneCrimson = false;
-                        p.ZoneCorrupt = false;
-                    }
-                }
+                
                 return;
             }
-            if (fighting)
+            if (Fighting)
             {
                 Main.dayTime = false;
                 Main.time = Main.nightLength - 1;
@@ -133,26 +124,33 @@ namespace BossRush.Systems
         private void StartFight()
         {
             Phase = BossRushPhase.Fight1;
-
+            Main.getGoodWorld = true;
             SummonBoss(allBosses[0]);
         }
 
-        public void EndBossRush()
+        public void EndBossRush(bool success)
         {
             // give them a buff or smth
             Main.NewText("The hallucinations disisspate");
+            if (success){
+                Main.NewText("You Won!");
+            }
             Reset();
         }
 
         public void SummonNextBoss()
         {
             currentBossIndex++;
+            if (currentBossIndex > allBosses.Length){
+                EndBossRush(true);
+                return;
+            }
             SummonBoss(allBosses[currentBossIndex]);
         }
 
         private void SummonBoss(long bossID)
         {
-            // SoundEngine.PlaySound(SoundID.Roar);
+            SoundEngine.PlaySound(SoundID.Roar);
             IsBossRushMode = true;
 
             if (Players.Length == 0)
@@ -162,6 +160,7 @@ namespace BossRush.Systems
 
             Player chosenPlayer = Players[Random.Shared.Next(Players.Length)];
             NPC.SpawnOnPlayer(chosenPlayer.whoAmI, (int)bossID);
+            
         }
     }
 
