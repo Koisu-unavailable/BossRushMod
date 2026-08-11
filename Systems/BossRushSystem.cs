@@ -54,7 +54,6 @@ namespace BossRush.Systems
             NPCID.TheDestroyer,
             NPCID.SkeletronPrime,
             NPCID.Retinazer,
-            NPCID.Spazmatism,
             NPCID.Plantera,
             NPCID.Golem,
             NPCID.HallowBoss, // empress of light
@@ -64,6 +63,8 @@ namespace BossRush.Systems
         ];
         public bool IsBossRushMode { get; private set; } = false;
         public long currentBossIndex {get; private set;} = 0;
+        //this is for debug editing
+        public static float eocSpeedMultiplier = 1.5f;
 
         // this is in 24 hour time
         public TimeSpan buildSecondsRemaining { get; private set; }
@@ -143,6 +144,12 @@ namespace BossRush.Systems
             currentBossIndex++;
             if (currentBossIndex > allBosses.Length){
                 EndBossRush(true);
+                return;
+            }
+            if (allBosses[currentBossIndex] == NPCID.Retinazer)
+            {
+                SummonBoss(allBosses[currentBossIndex]);
+                SummonBoss(NPCID.Spazmatism);
                 return;
             }
             SummonBoss(allBosses[currentBossIndex]);

@@ -10,9 +10,12 @@ namespace BossRush.VanillaTweaks.Bosses
 {
     public class BossRushModeBoss : GlobalNPC
     {
+        
         private BossRushSystem BossRushSystem => ModContent.GetInstance<BossRushSystem>();
+        static float EocSpeedMultiplier => BossRushSystem.eocSpeedMultiplier;
         public override void SetDefaults(NPC npc)
         {
+            
             if (BossRushSystem.IsBossRushMode)
             {
                 switch (npc.type)
@@ -35,31 +38,50 @@ namespace BossRush.VanillaTweaks.Bosses
                 }
             }
         }
+        public override void PostAI(NPC npc)
+        {
+            base.PostAI(npc);
+            switch (npc.type)
+            {
+                case NPCID.EyeofCthulhu:
+                    if (npc.target != -1 && npc.velocity.Length() < 20)
+                    {
+                        if (npc.ai[1] == 4)
+                        {
+                            npc.velocity *= EocSpeedMultiplier;
+                        }
+                        
+                    }
+                    break;
+            }
+        }
+        // ts pmo icl
         public override void OnKill(NPC npc)
         {
-            base.OnKill(npc);
-            if (BossRushSystem.allBosses.Contains(npc.type))
+            
+            // Treat Eater of Worlds body/tail/head as a boss death trigger as well
+            bool isRelevantBoss = BossRushSystem.allBosses.Append(NPCID.Spazmatism).Contains(npc.type)
+                || npc.type == NPCID.EaterofWorldsBody
+                || npc.type == NPCID.EaterofWorldsTail
+                || npc.type == NPCID.EaterofWorldsHead;
+
+            if (isRelevantBoss)
             {
-                // make sure eof is complety dead
+                // make sure no bosses or Eater segments remain alive/active
+                bool anyBossesAlive = Main.npc.Any(n => n.active && n.life > 0 && n.boss);
+                bool anyEaterSegmentsAlive = Main.npc.Any(n => n.active && n.life > 0 && (n.type == NPCID.EaterofWorldsBody || n.type == NPCID.EaterofWorldsHead || n.type == NPCID.EaterofWorldsTail));
 
-
-                if (BossRushSystem.allBosses.Contains(npc.type))
+                if (!(anyBossesAlive || anyEaterSegmentsAlive))
                 {
-
-                    if (!(Main.npc.Any(n => n.life > 0 && n.boss) 
-                    || Main.npc.Any(n => n.life > 0 && (n.type == NPCID.EaterofWorldsBody || n.type == NPCID.EaterofWorldsHead || n.type == NPCID.EaterofWorldsTail))) )
-                    {
-                        BossRushSystem.SummonNextBoss();
-                    }
-
+                    BossRushSystem.SummonNextBoss();
                 }
-
             }
         }
         public override void ModifyNPCLoot(NPC npc, NPCLoot npcLoot)
         {
+            // this is permanant
             base.ModifyNPCLoot(npc, npcLoot);
-            npcLoot.RemoveWhere(_ => true); // remove all loot
+            // npcLoot.RemoveWhere(_ => true); // remove all loot
         }
     }
 }
