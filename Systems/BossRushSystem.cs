@@ -5,6 +5,10 @@ using Terraria;
 using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.DataStructures;
+using Microsoft.Xna.Framework;
+using Terraria.Chat;
+using Terraria.Localization;
 
 namespace BossRush.Systems
 {
@@ -62,7 +66,9 @@ namespace BossRush.Systems
             NPCID.MoonLordCore
         ];
         public bool IsBossRushMode { get; private set; } = false;
-        public long currentBossIndex {get; private set;} = 0;
+        public long currentBossIndex { get; private set; } = 0;
+        // guard against concurrent/rapid summoning calls which can skip or block bosses
+        private bool isSummoning = false;
         //this is for debug editing
         public static float eocSpeedMultiplier = 1.5f;
 
@@ -112,7 +118,7 @@ namespace BossRush.Systems
         {
             if (!Fighting)
             {
-                
+
                 return;
             }
             if (Fighting)
@@ -133,7 +139,8 @@ namespace BossRush.Systems
         {
             // give them a buff or smth
             Main.NewText("The hallucinations disisspate");
-            if (success){
+            if (success)
+            {
                 Main.NewText("You Won!");
             }
             Reset();
@@ -141,33 +148,81 @@ namespace BossRush.Systems
 
         public void SummonNextBoss()
         {
-            currentBossIndex++;
-            if (currentBossIndex > allBosses.Length){
-                EndBossRush(true);
-                return;
-            }
-            if (allBosses[currentBossIndex] == NPCID.Retinazer)
+            // Prevent overlapping calls which could increment the index multiple times
+            if (isSummoning)
             {
-                SummonBoss(allBosses[currentBossIndex]);
-                SummonBoss(NPCID.Spazmatism);
+                Main.NewText($"SummonNextBoss: call skipped because isSummoning=true (currentIndex={currentBossIndex})");
                 return;
             }
-            SummonBoss(allBosses[currentBossIndex]);
+            isSummoning = true;
+            try
+            {
+                Main.NewText($"SummonNextBoss: currentIndex={currentBossIndex}, computing nextIndex");
+                long nextIndex = currentBossIndex + 1;
+                if (nextIndex >= allBosses.Length)
+                {
+                    Main.NewText($"SummonNextBoss: nextIndex={nextIndex} >= allBosses.Length={allBosses.Length}; ending BossRush");
+                    EndBossRush(true);
+                    return;
+                }
+
+                currentBossIndex = nextIndex;
+
+                long nextBoss = allBosses[currentBossIndex];
+                Main.NewText($"SummonNextBoss: nextIndex={nextIndex}, nextBossID={nextBoss}");
+
+                if (nextBoss == NPCID.Retinazer)
+                {
+                    Main.NewText($"SummonNextBoss: Summoning Retinazer (ID={nextBoss}) and Spazmatism");
+                    SummonBoss(nextBoss);
+                    SummonBoss(NPCID.Spazmatism);
+                    return;
+                }
+
+                SummonBoss(nextBoss);
+            }
+            finally
+            {
+                isSummoning = false;
+            }
         }
 
         private void SummonBoss(long bossID)
         {
+            Main.NewText($"SummonBoss: requested bossID={bossID}");
             SoundEngine.PlaySound(SoundID.Roar);
-            IsBossRushMode = true;
 
-            if (Players.Length == 0)
+            if (Players == null || Players.Length == 0)
             {
+                Main.NewText($"SummonBoss: no available players to spawn boss {bossID}");
                 return;
             }
 
             Player chosenPlayer = Players[Random.Shared.Next(Players.Length)];
+            Main.NewText($"SummonBoss: chosenPlayer whoAmI={chosenPlayer.whoAmI} at position={chosenPlayer.position}");
+            // stolen staright from calamity source for special cases
+            if (bossID == NPCID.Golem || bossID == NPCID.Skeleton || bossID == NPCID.DukeFishron)
+            {
+                Main.NewText("SummonBoss: special-case Golem spawn (bypassing temple requirement)");
+
+                int shitBoss = NPC.NewNPC(new EntitySource_BossSpawn(chosenPlayer), (int)(chosenPlayer.position.X + Main.rand.Next(-100, 101)), (int)(chosenPlayer.position.Y - 600f), (int)bossID, 1);
+                Main.NewText($"SummonBoss: Golem/Skeletron NewNPC returned index={shitBoss}");
+
+                if (Main.netMode == NetmodeID.SinglePlayer)
+                {
+                    Main.NewText(Language.GetTextValue("Announcement.HasAwoken", Main.npc[shitBoss].TypeName), new Color(175, 75, 255));
+                }
+                else if (Main.dedServ)
+                {
+                    ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Announcement.HasAwoken", [Main.npc[shitBoss].GetTypeNetName()]), new Color(175, 75, 255));
+                }
+                return;
+            }
+
+
+            Main.NewText($"SummonBoss: using SpawnOnPlayer for bossID={bossID} on player {chosenPlayer.whoAmI}");
             NPC.SpawnOnPlayer(chosenPlayer.whoAmI, (int)bossID);
-            
+
         }
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using BossRush.Systems;
 using Luminance.Common.Utilities;
@@ -10,12 +11,12 @@ namespace BossRush.VanillaTweaks.Bosses
 {
     public class BossRushModeBoss : GlobalNPC
     {
-        
+
         private BossRushSystem BossRushSystem => ModContent.GetInstance<BossRushSystem>();
         static float EocSpeedMultiplier => BossRushSystem.eocSpeedMultiplier;
         public override void SetDefaults(NPC npc)
         {
-            
+
             if (BossRushSystem.IsBossRushMode)
             {
                 switch (npc.type)
@@ -50,7 +51,7 @@ namespace BossRush.VanillaTweaks.Bosses
                         {
                             npc.velocity *= EocSpeedMultiplier;
                         }
-                        
+
                     }
                     break;
             }
@@ -58,8 +59,9 @@ namespace BossRush.VanillaTweaks.Bosses
         // ts pmo icl
         public override void OnKill(NPC npc)
         {
-            
+
             // Treat Eater of Worlds body/tail/head as a boss death trigger as well
+            BossRushSystem.allBosses.Append(NPCID.Spazmatism).ToList().ForEach(n => Console.WriteLine(n));
             bool isRelevantBoss = BossRushSystem.allBosses.Append(NPCID.Spazmatism).Contains(npc.type)
                 || npc.type == NPCID.EaterofWorldsBody
                 || npc.type == NPCID.EaterofWorldsTail
