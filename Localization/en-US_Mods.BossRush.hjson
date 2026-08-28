@@ -2,8 +2,8 @@
 
 Items: {
 	BossRush: {
-		DisplayName: Suspicious looking mushrooms
-		Tooltip: You probably shouldn't eat this...
+		DisplayName: F.U.N.G.I
+		Tooltip: Stands for Fun Unit of Nitrous Gas Ingestant. Very dangerous drug that cause hallucinations, do not consume.
 	}
 
 	KillEverythingDead: {
@@ -14,6 +14,6 @@ Items: {
 
 Misc: {
 	TimeToBuildArena: Time to build an arena!
-	overdosed: "{0} took too many {$Mods.BossRush.Items.BossRush.DisplayName}"
+	overdosed: "{0} took too much {$Mods.BossRush.Items.BossRush.DisplayName}"
 	Dizzy: You feel awash with uneasiniess (CHANGE)
 }

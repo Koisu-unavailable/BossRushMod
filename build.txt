@@ -1,4 +1,4 @@
 displayName = Boss rush
 author = lavender.lotus
-version = 0.7
-modReferences = SubworldLibrary, StructureHelper, Luminance
+version = 0.8.1
+modReferences = Luminance
