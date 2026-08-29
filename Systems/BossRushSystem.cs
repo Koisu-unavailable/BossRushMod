@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework;
 using Terraria.Chat;
 using Terraria.Localization;
 using BossRush.Cutscenes;
+using BossRush.VanillaTweaks.Bosses;
 
 namespace BossRush.Systems
 {
@@ -45,10 +46,10 @@ namespace BossRush.Systems
             NPCID.CultistBoss,
             NPCID.MoonLordCore
         };
-        public readonly long[] allBosses =
+        public readonly Boss[] allBosses =
         [
-            NPCID.KingSlime,
-            NPCID.EyeofCthulhu,
+            new Boss(){Type = NPCID.KingSlime, Health = 10000, Damage = 150},
+            new Boss(){Type = NPCID.EyeofCthulhu, Health = 9800, Damage = 150, PostAI = BossRushModeBoss.EocPostAI},
             NPCID.Deerclops,
             NPCID.QueenBee,
             NPCID.BrainofCthulhu,
@@ -73,11 +74,7 @@ namespace BossRush.Systems
         public Player[] Players { private get; set; } = [];
         public bool Fighting => Phase != BossRushPhase.Intro && Phase != BossRushPhase.None;
 
-        // /// <summary>
-        // /// This is the ID of the NPC that when killed will summon the next boss.
-        // /// E.g. The orginal head of the eate
-        // /// </summary>
-        // public int currentBossID; 
+        public Boss CurrentBoss => allBosses[currentBossIndex];
 
         // stored in BossRushSystem so they can be editing in game with dragon less
         #region Boss Difficulty Modifier
@@ -140,7 +137,6 @@ namespace BossRush.Systems
             {
                 return;
             }
-
             Phase = BossRushPhase.Fight1;
             Main.getGoodWorld = true;
             currentBossIndex = -1;
@@ -161,33 +157,89 @@ namespace BossRush.Systems
         {
             Reset();
         }
+        public bool HasCurrentBossAlive()
+        {
+            if (!IsBossRushMode || currentBossIndex < 0 || currentBossIndex >= allBosses.Length)
+            {
+                return false;
+            }
+
+            long bossType = allBosses[currentBossIndex];
+            bool bossAlive = Main.npc.Any(n => n.active && n.life > 0 && n.type == bossType);
+
+            if (bossType == NPCID.Retinazer)
+            {
+                bossAlive |= Main.npc.Any(n => n.active && n.life > 0 && n.type == NPCID.Spazmatism);
+            }
+            else if (bossType == NPCID.EaterofWorldsHead)
+            {
+                bossAlive |= Main.npc.Any(n => n.active && n.life > 0 && (n.type == NPCID.EaterofWorldsHead || n.type == NPCID.EaterofWorldsBody || n.type == NPCID.EaterofWorldsTail));
+            }
+
+            return bossAlive;
+        }
+
         public void SummonNextBoss()
         {
             if (!IsBossRushMode || isSummoning)
                 return;
 
             isSummoning = true;
-            try
+            if (++currentBossIndex >= allBosses.Length)
             {
-                if (++currentBossIndex >= allBosses.Length)
-                {
-                    EndBossRush(true);
-                    return;
-                }
-
-                SummonBoss(allBosses[currentBossIndex]);
-                if (allBosses[currentBossIndex] == NPCID.Retinazer)
-                {
-                    SummonBoss(NPCID.Spazmatism);
-                }
-            }
-            finally
-            {
+                EndBossRush(true);
                 isSummoning = false;
+                return;
             }
+
+            if (!SummonBoss(allBosses[currentBossIndex]))
+            {
+                currentBossIndex--;
+                isSummoning = false;
+                return;
+            }
+
+            if (allBosses[currentBossIndex] == NPCID.Retinazer)
+            {
+                SummonBoss(NPCID.Spazmatism);
+            }
+            isSummoning = false;
         }
 
-        private void SummonBoss(long bossID)
+        private int SpawnBossNearPlayer(Player chosenPlayer, int bossType)
+        {
+            int spawnX = (int)(chosenPlayer.position.X + Main.rand.Next(-300, 301));
+            int spawnY = (int)(chosenPlayer.position.Y - 600f);
+            int spawnedIndex = NPC.NewNPC(new EntitySource_BossSpawn(chosenPlayer), spawnX, spawnY, bossType, 1);
+
+            Main.NewText($"SummonBoss: NewNPC returned index={spawnedIndex} for bossID={bossType}");
+
+            if (spawnedIndex < 0)
+            {
+                Main.NewText($"SummonBoss: failed to create boss {bossType} near player {chosenPlayer.whoAmI}");
+                return -1;
+            }
+
+            NPC spawnedBoss = Main.npc[spawnedIndex];
+            if (!spawnedBoss.active || spawnedBoss.type != bossType)
+            {
+                Main.NewText($"SummonBoss: created NPC index={spawnedIndex}, but it was not active or had the wrong type for boss {bossType}");
+                return -1;
+            }
+
+            if (Main.netMode == NetmodeID.SinglePlayer)
+            {
+                Main.NewText(Language.GetTextValue("Announcement.HasAwoken", spawnedBoss.TypeName), new Color(175, 75, 255));
+            }
+            else if (Main.dedServ)
+            {
+                ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Announcement.HasAwoken", [spawnedBoss.GetTypeNetName()]), new Color(175, 75, 255));
+            }
+
+            return spawnedIndex;
+        }
+
+        private bool SummonBoss(long bossID)
         {
             Main.NewText($"SummonBoss: requested bossID={bossID}");
             SoundEngine.PlaySound(SoundID.Roar);
@@ -195,34 +247,25 @@ namespace BossRush.Systems
             if (Players == null || Players.Length == 0)
             {
                 Main.NewText($"SummonBoss: no available players to spawn boss {bossID}");
-                return;
+                return false;
             }
 
             Player chosenPlayer = Players[Random.Shared.Next(Players.Length)];
             Main.NewText($"SummonBoss: chosenPlayer whoAmI={chosenPlayer.whoAmI} at position={chosenPlayer.position}");
-            // stolen staright from calamity source for special cases
-            if (bossID == NPCID.Golem || bossID == NPCID.SkeletronHead || bossID == NPCID.DukeFishron)
+
+            if (!chosenPlayer.active || chosenPlayer.dead)
             {
-                Main.NewText("SummonBoss: special-case Golem spawn (bypassing temple requirement)");
-
-                int shitBoss = NPC.NewNPC(new EntitySource_BossSpawn(chosenPlayer), (int)(chosenPlayer.position.X + Main.rand.Next(-100, 101)), (int)(chosenPlayer.position.Y - 600f), (int)bossID, 1);
-                Main.NewText($"SummonBoss: Golem/Skeletron/Duke NewNPC returned index={shitBoss}");
-
-                if (Main.netMode == NetmodeID.SinglePlayer)
-                {
-                    Main.NewText(Language.GetTextValue("Announcement.HasAwoken", Main.npc[shitBoss].TypeName), new Color(175, 75, 255));
-                }
-                else if (Main.dedServ)
-                {
-                    ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Announcement.HasAwoken", [Main.npc[shitBoss].GetTypeNetName()]), new Color(175, 75, 255));
-                }
-                return;
+                Main.NewText($"SummonBoss: invalid chosen player {chosenPlayer.whoAmI} for boss {bossID}; picking another player");
+                chosenPlayer = Players.FirstOrDefault(player => player.active && !player.dead) ?? chosenPlayer;
             }
 
+            if (!chosenPlayer.active || chosenPlayer.dead)
+            {
+                Main.NewText($"SummonBoss: no valid player available to spawn boss {bossID}");
+                return false;
+            }
 
-            Main.NewText($"SummonBoss: using SpawnOnPlayer for bossID={bossID} on player {chosenPlayer.whoAmI}");
-            NPC.SpawnOnPlayer(chosenPlayer.whoAmI, (int)bossID);
-
+            return SpawnBossNearPlayer(chosenPlayer, (int)bossID) >= 0;
         }
     }
 

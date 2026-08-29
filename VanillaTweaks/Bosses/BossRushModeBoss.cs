@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using BossRush.Systems;
 using Microsoft.Xna.Framework;
+using Mono.CompilerServices.SymbolWriter;
 using Steamworks;
 using Terraria;
 using Terraria.ID;
@@ -21,53 +22,46 @@ namespace BossRush.VanillaTweaks.Bosses
         {
             if (BossRushSystem.IsBossRushMode)
             {
-                switch (npc.type)
+                if (npc.type == BossRushSystem.CurrentBoss)
                 {
-                    case NPCID.KingSlime:
-                        npc.lifeMax = 10000; // moodlord master health
-                        npc.damage = 150;
-                        break;
-                    case NPCID.EyeofCthulhu:
-                        npc.lifeMax = 9800;
-                        npc.damage = 150;
-                        break;
-                    case NPCID.Deerclops:
-                        npc.lifeMax *= 5;
-                        npc.damage *= 3;
-                        break;
-                    case NPCID.QueenBee:
-                        npc.lifeMax *= 10;
-                        npc.damage *= 3;
-                        break;
+                    npc.lifeMax = BossRushSystem.CurrentBoss.Health ?? npc.lifeMax;
+                    npc.lifeMax *= BossRushSystem.CurrentBoss.healthMult ?? 1;
+                    npc.damage = BossRushSystem.CurrentBoss.Damage ?? npc.damage;
+                    npc.damage *= BossRushSystem.CurrentBoss.DamageMult ?? 1;
                 }
+
             }
         }
+        // modify npc AI's if required
         public override void PostAI(NPC npc)
         {
-            switch (npc.type)
+            if (BossRushSystem.IsBossRushMode)
             {
-                case NPCID.EyeofCthulhu:
-                    SpeedUpNPC(npc, BossRushSystem.eocSpeedMultiplier, BossRushSystem.eocMaxSpeed);
-
-                    // check not dashing
-                    if (npc.ai[1] == 0)
-
-                        ReverseIfTooFar(npc, BossRushSystem.eocMaxDistance);
-
-                    lastPosition = npc.position;
-                    hasLastPosition = true;
-                    break;
+                if (!(BossRushSystem.CurrentBoss.PostAI == null))
+                {
+                    BossRushSystem.CurrentBoss.PostAI(npc, this);
+                }
 
             }
-
         }
-        private void ReverseIfTooFar(NPC npc, float maxDistance)
+        public static void EocPostAI(NPC npc, BossRushModeBoss globalNPC)
         {
-            if (hasLastPosition && npc.target >= 0 && npc.target < Main.maxPlayers && Main.player[npc.target].active)
+            SpeedUpNPC(npc, BossRushSystem.eocSpeedMultiplier, BossRushSystem.eocMaxSpeed);
+
+            // check not dashing
+            if (npc.ai[1] == 0)
+
+                ReverseIfTooFar(npc, BossRushSystem.eocMaxDistance, globalNPC);
+            globalNPC.lastPosition = npc.position;
+            globalNPC.hasLastPosition = true;
+        }
+        private static void ReverseIfTooFar(NPC npc, float maxDistance, BossRushModeBoss globalNPC)
+        {
+            if (globalNPC.hasLastPosition && npc.target >= 0 && npc.target < Main.maxPlayers && Main.player[npc.target].active)
             {
                 Player target = Main.player[npc.target];
                 float distanceSquared = Vector2.DistanceSquared(target.Center, npc.Center);
-                float previousDistanceSquared = Vector2.DistanceSquared(target.Center, lastPosition + npc.Size / 2f);
+                float previousDistanceSquared = Vector2.DistanceSquared(target.Center, globalNPC.lastPosition + npc.Size / 2f);
                 if (distanceSquared > maxDistance * maxDistance && distanceSquared >= previousDistanceSquared)
                 {
                     Vector2 toTarget = Main.player[npc.target].position - npc.Center;
@@ -87,7 +81,7 @@ namespace BossRush.VanillaTweaks.Bosses
         /// <param name="npc">npc</param>
         /// <param name="mult">speed multiplier</param>
         /// <param name="maxMagnitude">Maximum magnitude of the velocity vector</param>
-        private void SpeedUpNPC(NPC npc, float mult, float maxMagnitude)
+        private static void SpeedUpNPC(NPC npc, float mult, float maxMagnitude)
         {
             // try get as close to max speed as possible
             for (float tryMult = mult; tryMult > 1; tryMult -= 0.001f)
@@ -109,22 +103,14 @@ namespace BossRush.VanillaTweaks.Bosses
                 return;
             }
 
-            BossRushSystem.allBosses.Append(NPCID.Spazmatism).ToList().ForEach(n => Console.WriteLine(n));
-            bool isRelevantBoss = BossRushSystem.allBosses.Append(NPCID.Spazmatism).Contains(npc.type)
+            bool isRelevantBoss = BossRushSystem.allBosses.Contains(npc.type)
+                || npc.type == NPCID.Spazmatism
                 || npc.type == NPCID.EaterofWorldsBody
                 || npc.type == NPCID.EaterofWorldsTail
                 || npc.type == NPCID.EaterofWorldsHead;
-
-            if (isRelevantBoss)
+            if (isRelevantBoss && !BossRushSystem.HasCurrentBossAlive())
             {
-                // make sure no bosses or Eater segments remain alive/active
-                bool anyBossesAlive = Main.npc.Any(n => n.life > 0 && n.boss);
-                bool anyEaterSegmentsAlive = Main.npc.Any(n => n.life > 0 && (n.type == NPCID.EaterofWorldsBody || n.type == NPCID.EaterofWorldsHead || n.type == NPCID.EaterofWorldsTail));
-
-                if (!(anyBossesAlive || anyEaterSegmentsAlive))
-                {
-                    BossRushSystem.SummonNextBoss();
-                }
+                BossRushSystem.SummonNextBoss();
             }
         }
         public override void ModifyNPCLoot(NPC npc, NPCLoot npcLoot)
