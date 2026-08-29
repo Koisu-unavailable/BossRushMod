@@ -5,6 +5,7 @@ using Terraria.ModLoader;
 public class BossRushMusic : ModSceneEffect
 {
     private BossRushSystem BossRushSystem => ModContent.GetInstance<BossRushSystem>();
+    public override ModSurfaceBackgroundStyle SurfaceBackgroundStyle => ModContent.GetInstance<BossRushBackGroundStyle>();
     public override SceneEffectPriority Priority => SceneEffectPriority.BossHigh;
 
     
