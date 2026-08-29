@@ -49,9 +49,9 @@ namespace BossRush.Systems
         public readonly Boss[] allBosses =
         [
             new Boss(){Type = NPCID.KingSlime, Health = 10000, Damage = 300},
-            new Boss(){Type = NPCID.EyeofCthulhu, Health = 9800, Damage = 150, PostAI = BossRushModeBoss.EocPostAI},
+            new Boss(){Type = NPCID.EyeofCthulhu, Health = 15000, Damage = 150, PostAI = BossRushModeBoss.EocPostAI},
             new Boss(){Type = NPCID.Deerclops, healthMult = 3, DamageMult = 5},
-            NPCID.QueenBee,
+            new Boss(){Type = NPCID.QueenBee, healthMult = 5, DamageMult = 2},
             NPCID.BrainofCthulhu,
             NPCID.EaterofWorldsHead,
             NPCID.SkeletronHead,
@@ -208,7 +208,7 @@ namespace BossRush.Systems
 
         private int SpawnBossNearPlayer(Player chosenPlayer, int bossType)
         {
-            int spawnX = (int)(chosenPlayer.position.X + Main.rand.Next(-300, 301));
+            int spawnX = (int)(chosenPlayer.position.X + Main.rand.Next(-300, 301) + 150);
             int spawnY = (int)(chosenPlayer.position.Y - 600f);
             int spawnedIndex = NPC.NewNPC(new EntitySource_BossSpawn(chosenPlayer), spawnX, spawnY, bossType, 1);
 
