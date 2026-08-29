@@ -37,7 +37,7 @@ namespace BossRush.VanillaTweaks.Bosses
         {
             if (BossRushSystem.IsBossRushMode)
             {
-                if (!(BossRushSystem.CurrentBoss.PostAI == null))
+                if (!(BossRushSystem.CurrentBoss.PostAI == null) && npc.type == BossRushSystem.CurrentBoss.Type)
                 {
                     BossRushSystem.CurrentBoss.PostAI(npc, this);
                 }

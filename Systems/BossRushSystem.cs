@@ -48,9 +48,9 @@ namespace BossRush.Systems
         };
         public readonly Boss[] allBosses =
         [
-            new Boss(){Type = NPCID.KingSlime, Health = 10000, Damage = 150},
+            new Boss(){Type = NPCID.KingSlime, Health = 10000, Damage = 300},
             new Boss(){Type = NPCID.EyeofCthulhu, Health = 9800, Damage = 150, PostAI = BossRushModeBoss.EocPostAI},
-            NPCID.Deerclops,
+            new Boss(){Type = NPCID.Deerclops, healthMult = 3, DamageMult = 5},
             NPCID.QueenBee,
             NPCID.BrainofCthulhu,
             NPCID.EaterofWorldsHead,

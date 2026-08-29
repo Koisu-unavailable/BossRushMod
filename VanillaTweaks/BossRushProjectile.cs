@@ -11,16 +11,20 @@ public class BossRushProjectile : GlobalProjectile
     {
         if (BossRushSystem.IsBossRushMode)
         {
-            if (entity.hostile) // TODO: 
+            if (entity.hostile)
             {
-                // do something with this
-                // On_Projectile.NewProjectileDirect += (On_Projectile.orig_NewProjectileDirect orig, Terraria.DataStructures.IEntitySource spawnSource, Microsoft.Xna.Framework.Vector2 position, Microsoft.Xna.Framework.Vector2 velocity, int type, int damage, float knockback, int owner, float ai0, float ai1, float ai2) =>
-                // {
-
-                // }
-                entity.damage *= BossRushSystem.CurrentBoss.DamageMult ?? 1;
+                entity.damage = (int)(entity.damage * (BossRushSystem.CurrentBoss.DamageMult ?? 1));
             }
         }
     }
-
+    public override void ModifyHitPlayer(Projectile projectile, Player target, ref Player.HurtModifiers modifiers)
+    {
+        if (BossRushSystem.IsBossRushMode)
+        {
+            if (projectile.hostile)
+            {
+                modifiers.IncomingDamageMultiplier *= BossRushSystem.CurrentBoss.DamageMult ?? 1;
+            }
+        }
+    }
 }
