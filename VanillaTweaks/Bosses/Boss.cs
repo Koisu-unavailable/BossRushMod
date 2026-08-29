@@ -15,6 +15,15 @@ public struct Boss
     public int? Health;
     public int? healthMult;
     public PostAI? PostAI;
+
+    /// <summary>
+    /// Extra enemies that will be affected by damage and health multipliers
+    /// </summary>
+    public long[]? extraEnemiesToBuff;
+    /// <summary>
+    /// Extra projectiles that will be affected by damage and health multipliers
+    /// </summary>
+    public long[]? extraProjectilesToBuff;
     public required long Type;
 
     public Boss(long type)

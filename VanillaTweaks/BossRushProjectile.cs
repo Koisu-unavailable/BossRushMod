@@ -1,3 +1,4 @@
+using System.Linq;
 using BossRush.Systems;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
@@ -21,7 +22,8 @@ public class BossRushProjectile : GlobalProjectile
     {
         if (BossRushSystem.IsBossRushMode)
         {
-            if (projectile.hostile)
+            if (BossRushSystem.CurrentBoss.extraProjectilesToBuff == null) {return;}
+            if (BossRushSystem.CurrentBoss.extraProjectilesToBuff.Contains(projectile.type))
             {
                 modifiers.IncomingDamageMultiplier *= BossRushSystem.CurrentBoss.DamageMult ?? 1;
             }

@@ -48,11 +48,11 @@ namespace BossRush.Systems
         };
         public readonly Boss[] allBosses =
         [
-            new Boss(){Type = NPCID.KingSlime, Health = 10000, Damage = 300},
-            new Boss(){Type = NPCID.EyeofCthulhu, Health = 15000, Damage = 150, PostAI = BossRushModeBoss.EocPostAI},
-            new Boss(){Type = NPCID.Deerclops, healthMult = 3, DamageMult = 5},
-            new Boss(){Type = NPCID.QueenBee, healthMult = 5, DamageMult = 2},
-            NPCID.BrainofCthulhu,
+            new Boss(){Type = NPCID.KingSlime, Health = 10000, Damage = 300, extraEnemiesToBuff = [NPCID.SlimeSpiked, NPCID.BlueSlime]},
+            new Boss(){Type = NPCID.EyeofCthulhu, Health = 15000, Damage = 150, PostAI = BossRushModeBoss.EocPostAI, extraEnemiesToBuff = [NPCID.ServantofCthulhu]},
+            new Boss(){Type = NPCID.Deerclops, healthMult = 3, DamageMult = 5, extraProjectilesToBuff = [ProjectileID.DeerclopsIceSpike, ProjectileID.DeerclopsRangedProjectile, ProjectileID.InsanityShadowHostile]},
+            new Boss(){Type = NPCID.QueenBee, healthMult = 5, DamageMult = 2, extraProjectilesToBuff = [ProjectileID.QueenBeeStinger], extraEnemiesToBuff = [NPCID.Bee]},
+            new Boss(){Type = NPCID.BrainofCthulhu, healthMult = 10, DamageMult = 3, extraEnemiesToBuff = [NPCID.Creeper]},
             NPCID.EaterofWorldsHead,
             NPCID.SkeletronHead,
             NPCID.WallofFlesh,

@@ -29,6 +29,12 @@ namespace BossRush.VanillaTweaks.Bosses
                     npc.damage = BossRushSystem.CurrentBoss.Damage ?? npc.damage;
                     npc.damage *= BossRushSystem.CurrentBoss.DamageMult ?? 1;
                 }
+                if (BossRushSystem.CurrentBoss.extraEnemiesToBuff == null) {return;}
+                if (BossRushSystem.CurrentBoss.extraEnemiesToBuff.Contains(npc.type))
+                {
+                    npc.lifeMax *= BossRushSystem.CurrentBoss.healthMult ?? 1;
+                    npc.damage *= BossRushSystem.CurrentBoss.DamageMult ?? 1;
+                }
 
             }
         }
