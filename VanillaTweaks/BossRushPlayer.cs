@@ -13,7 +13,7 @@ public class BossRushPlayer : ModPlayer
         if (ModContent.GetInstance<BossRushSystem>().IsBossRushMode)
         {
             ModContent.GetInstance<BossRushSystem>().EndBossRush(false);
-            Player.respawnTimer = 3;
+            Player.respawnTimer = 30; // half a second
         }
     }
     public override void PostUpdate()
