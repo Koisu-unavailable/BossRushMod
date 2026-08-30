@@ -50,6 +50,18 @@ namespace BossRush.VanillaTweaks.Bosses
 
             }
         }
+
+        public override void ModifyHitPlayer(NPC npc, Player target, ref Player.HurtModifiers modifiers)
+        {
+            base.ModifyHitPlayer(npc, target, ref modifiers);
+            if (BossRushSystem.IsBossRushMode)
+            {
+                if (npc.type == NPCID.VileSpit)
+                {
+                    modifiers.IncomingDamageMultiplier *= 10;
+                }
+            }
+        }
         public static void EocPostAI(NPC npc, BossRushModeBoss globalNPC)
         {
             SpeedUpNPC(npc, BossRushSystem.eocSpeedMultiplier, BossRushSystem.eocMaxSpeed);

@@ -50,10 +50,13 @@ namespace BossRush.Systems
         [
             new Boss(){Type = NPCID.KingSlime, Health = 10000, Damage = 300, extraEnemiesToBuff = [NPCID.SlimeSpiked, NPCID.BlueSlime]},
             new Boss(){Type = NPCID.EyeofCthulhu, Health = 15000, Damage = 150, PostAI = BossRushModeBoss.EocPostAI, extraEnemiesToBuff = [NPCID.ServantofCthulhu]},
-            new Boss(){Type = NPCID.Deerclops, healthMult = 3, DamageMult = 5, extraProjectilesToBuff = [ProjectileID.DeerclopsIceSpike, ProjectileID.DeerclopsRangedProjectile, ProjectileID.InsanityShadowHostile]},
+            new Boss(){Type = NPCID.Deerclops, healthMult = 3, DamageMult = 5, 
+                extraProjectilesToBuff = [ProjectileID.DeerclopsIceSpike, ProjectileID.DeerclopsRangedProjectile, ProjectileID.InsanityShadowHostile]},
             new Boss(){Type = NPCID.QueenBee, healthMult = 5, DamageMult = 2, extraProjectilesToBuff = [ProjectileID.QueenBeeStinger], extraEnemiesToBuff = [NPCID.Bee]},
             new Boss(){Type = NPCID.BrainofCthulhu, healthMult = 10, DamageMult = 3, extraEnemiesToBuff = [NPCID.Creeper]},
-            NPCID.EaterofWorldsHead,
+            new Boss(){Type = NPCID.EaterofWorldsHead, healthMult = 20, DamageMult = 5,
+                extraEnemiesToBuff = [NPCID.EaterofSouls, NPCID.EaterofWorldsBody, NPCID.EaterofWorldsTail, NPCID.VileSpit]},
+                    // the PostAI gives an extra buff to Vile Spit as the damage multiplier isnt enough to make it siginificant with out making the entire boss too strong
             NPCID.SkeletronHead,
             NPCID.WallofFlesh,
             NPCID.QueenSlimeBoss,
@@ -69,6 +72,7 @@ namespace BossRush.Systems
         ];
         public bool IsBossRushMode { get; private set; } = false;
         public long currentBossIndex { get; private set; } = 0;
+
         // guard against concurrent/rapid summoning calls which can skip or block bosses
         private bool isSummoning = false;
         public Player[] Players { private get; set; } = [];

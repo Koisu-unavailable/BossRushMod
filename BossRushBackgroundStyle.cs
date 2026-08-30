@@ -19,7 +19,7 @@ public class BossRushBackGroundStyle : ModSurfaceBackgroundStyle
     public override bool PreDrawCloseBackground(SpriteBatch spriteBatch)
     {
         var screenRec = new Rectangle(0,0, Main.screenWidth, Main.screenHeight);
-        spriteBatch.Draw(background.Value, new Microsoft.Xna.Framework.Vector2(0,0), Color.White);
+        spriteBatch.Draw(background.Value, new Vector2(0,0), Color.White);
         return false;
     }
 }
