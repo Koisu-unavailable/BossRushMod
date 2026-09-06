@@ -86,8 +86,19 @@ namespace BossRush.Systems
             new Boss(){Type = NPCID.DukeFishron, healthMult = 1, DamageMult = 1,
             extraEnemiesToBuff = [NPCID.Sharkron, NPCID.Sharkron2],
             extraProjectilesToBuff = [ProjectileID.Bubble, ProjectileID.Sharknado, ProjectileID.Cthulunado, ProjectileID.SharknadoBolt]},
-            NPCID.CultistBoss,
-            NPCID.MoonLordCore
+            new Boss(){Type = NPCID.CultistBoss, healthMult = 2, DamageMult = 2,
+            extraEnemiesToBuff = [NPCID.CultistBossClone, NPCID.AncientCultistSquidhead, NPCID.AncientDoom,
+                NPCID.CultistDragonHead, NPCID.CultistDragonBody1, NPCID.CultistDragonBody2,
+                NPCID.CultistDragonBody3, NPCID.CultistDragonBody4, NPCID.CultistDragonTail],
+            extraProjectilesToBuff = [ProjectileID.CultistBossFireBall, ProjectileID.CultistBossFireBallClone,
+                ProjectileID.CultistBossIceMist, ProjectileID.CultistBossLightningOrb,
+                ProjectileID.CultistBossLightningOrbArc, ProjectileID.CultistRitual,
+                466, ProjectileID.AncientDoomProjectile]},
+            new Boss(){Type = NPCID.MoonLordCore, healthMult = 2, DamageMult = 1,
+            extraEnemiesToBuff = [NPCID.MoonLordHead, NPCID.MoonLordHand, NPCID.MoonLordFreeEye, NPCID.MoonLordLeechBlob],
+            extraProjectilesToBuff = [ProjectileID.PhantasmalSphere, ProjectileID.PhantasmalEye,
+                ProjectileID.PhantasmalBolt, ProjectileID.PhantasmalDeathray, ProjectileID.MoonLeech,
+                ProjectileID.MoonBoulder]}
         ];
         public bool IsBossRushMode { get; private set; } = false;
         public long currentBossIndex { get; private set; } = 0;

@@ -1,3 +1,4 @@
+using Luminance.Common.Utilities;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -14,6 +15,7 @@ namespace BossRush.Items
         {
             Item.CloneDefaults(ItemID.Zenith);
             Item.damage = 1900;
+            Item.scale *= 20;
         }
 
 
