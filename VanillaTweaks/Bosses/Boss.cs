@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 
 namespace BossRush.VanillaTweaks.Bosses;
@@ -15,6 +16,8 @@ public struct Boss
     public int? Health;
     public int? healthMult;
     public PostAI? PostAI;
+    public OnSpawn? OnSpawn;
+    public OnKill? OnKill;
 
     /// <summary>
     /// Extra enemies that will be affected by damage and health multipliers
@@ -69,3 +72,5 @@ public struct Boss
     }
 }
 public delegate void PostAI(NPC npc, BossRushModeBoss globalNPC);
+public delegate void OnSpawn(NPC npc, IEntitySource source);
+public delegate void OnKill(NPC npc, BossRushModeBoss globalNPC);

@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Mono.CompilerServices.SymbolWriter;
 using Steamworks;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -18,6 +19,7 @@ namespace BossRush.VanillaTweaks.Bosses
         public override bool InstancePerEntity => true;
         private Vector2 lastPosition;
         private bool hasLastPosition;
+        public bool hasWOFTeleported = false;
         public override void SetDefaults(NPC npc)
         {
             if (BossRushSystem.IsBossRushMode)
@@ -29,7 +31,7 @@ namespace BossRush.VanillaTweaks.Bosses
                     npc.damage = BossRushSystem.CurrentBoss.Damage ?? npc.damage;
                     npc.damage *= BossRushSystem.CurrentBoss.DamageMult ?? 1;
                 }
-                if (BossRushSystem.CurrentBoss.extraEnemiesToBuff == null) {return;}
+                if (BossRushSystem.CurrentBoss.extraEnemiesToBuff == null) { return; }
                 if (BossRushSystem.CurrentBoss.extraEnemiesToBuff.Contains(npc.type))
                 {
                     npc.lifeMax *= BossRushSystem.CurrentBoss.healthMult ?? 1;
@@ -50,7 +52,17 @@ namespace BossRush.VanillaTweaks.Bosses
 
             }
         }
+        public override void OnSpawn(NPC npc, IEntitySource source)
+        {
+            if (BossRushSystem.IsBossRushMode)
+            {
+                if (!(BossRushSystem.CurrentBoss.OnSpawn == null) && npc.type == BossRushSystem.CurrentBoss.Type)
+                {
+                    BossRushSystem.CurrentBoss.OnSpawn(npc, source);
+                }
 
+            }
+        }
         public override void ModifyHitPlayer(NPC npc, Player target, ref Player.HurtModifiers modifiers)
         {
             base.ModifyHitPlayer(npc, target, ref modifiers);
@@ -62,17 +74,45 @@ namespace BossRush.VanillaTweaks.Bosses
                 }
             }
         }
+        public static void WofPostAI(NPC npc, BossRushModeBoss bossRushModeBoss)
+        {
+            if (!bossRushModeBoss.hasWOFTeleported)
+            {
+                var bossRushSystem = ModContent.GetInstance<BossRushSystem>();
+                var searchCenter = npc.Center;
+                var searchArea = new Rectangle((int)searchCenter.X - 200, (int)searchCenter.Y, 400, 400);
+                var tpPos = Utils.FindValidTpPos(searchArea, searchCenter,  6);
+                foreach (Player p in bossRushSystem.Players)
+                {
+                    if (!p.active || !Utils.IsValidTeleportPosition(tpPos, p.Size))
+                    {
+                        Main.NewText("WOFPostAI: Couldn't find valid tpPos");
+                        continue;
+                    }
+
+                    // teleport is only called on server in multiplayer so p.Teleport is fine here
+                    Main.NewText($"WOFPostAI: TPing player: {p.name} to {tpPos}");
+                    p.GetModPlayer<BossRushPlayer>().previousPos = p.position;
+                    p.Teleport(tpPos, TeleportationStyleID.TeleportationPotion);
+                }
+                bossRushModeBoss.hasWOFTeleported = true;
+                
+            }
+            SpeedUpNPC(npc, BossRushSystem.WOFSpeedMultiplier, BossRushSystem.WOFMaxSpeed); 
+        }
         public static void EocPostAI(NPC npc, BossRushModeBoss globalNPC)
         {
             SpeedUpNPC(npc, BossRushSystem.eocSpeedMultiplier, BossRushSystem.eocMaxSpeed);
 
             // check not dashing
             if (npc.ai[1] == 0)
-
                 ReverseIfTooFar(npc, BossRushSystem.eocMaxDistance, globalNPC);
             globalNPC.lastPosition = npc.position;
             globalNPC.hasLastPosition = true;
         }
+        /// <summary>
+        /// ai generated
+        /// </summary>
         private static void ReverseIfTooFar(NPC npc, float maxDistance, BossRushModeBoss globalNPC)
         {
             if (globalNPC.hasLastPosition && npc.target >= 0 && npc.target < Main.maxPlayers && Main.player[npc.target].active)
@@ -113,6 +153,14 @@ namespace BossRush.VanillaTweaks.Bosses
             }
 
         }
+        public static void OnWOFKill(NPC npc, BossRushModeBoss globalNPC)
+        {
+            var bossRushSystem = ModContent.GetInstance<BossRushSystem>();
+            foreach (Player p in bossRushSystem.Players)
+            {
+                p.Teleport(p.GetModPlayer<BossRushPlayer>().previousPos, TeleportationStyleID.TeleportationPotion);
+            }
+        }
         // ts pmo icl
         public override void OnKill(NPC npc)
         {
@@ -120,7 +168,10 @@ namespace BossRush.VanillaTweaks.Bosses
             {
                 return;
             }
-
+            if (BossRushSystem.CurrentBoss == npc.type)
+            {
+                if (BossRushSystem.CurrentBoss.OnKill != null) BossRushSystem.CurrentBoss.OnKill(npc, this);
+            }
             bool isRelevantBoss = BossRushSystem.allBosses.Contains(npc.type)
                 || npc.type == NPCID.Spazmatism
                 || npc.type == NPCID.EaterofWorldsBody

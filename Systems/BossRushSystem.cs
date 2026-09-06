@@ -56,11 +56,12 @@ namespace BossRush.Systems
             new Boss(){Type = NPCID.BrainofCthulhu, healthMult = 10, DamageMult = 3, extraEnemiesToBuff = [NPCID.Creeper]},
             new Boss(){Type = NPCID.EaterofWorldsHead, healthMult = 20, DamageMult = 4,
                 extraEnemiesToBuff = [NPCID.EaterofSouls, NPCID.EaterofWorldsBody, NPCID.EaterofWorldsTail, NPCID.VileSpit]},
-                    // the PostAI gives an extra buff to Vile Spit as the damage multiplier isnt enough to make it siginificant with out making the entire boss too strong
             new Boss(){Type = NPCID.SkeletronHead, healthMult = 9, DamageMult = 3, 
             extraEnemiesToBuff = [NPCID.DarkCaster, NPCID.SkeletronHand], 
             extraProjectilesToBuff = [ProjectileID.Skull]},
-            NPCID.WallofFlesh,
+            new Boss(){Type = NPCID.WallofFlesh, healthMult = 10, Damage = 3, 
+            extraEnemiesToBuff = [NPCID.TheHungry, NPCID.TheHungryII, NPCID.FireImp, NPCID.BurningSphere, NPCID.LeechBody, NPCID.LeechHead, NPCID.LeechTail], 
+            extraProjectilesToBuff = [ProjectileID.EyeBeam], PostAI = BossRushModeBoss.WofPostAI, OnKill = BossRushModeBoss.OnWOFKill},
             NPCID.QueenSlimeBoss,
             NPCID.TheDestroyer,
             NPCID.SkeletronPrime,
@@ -77,16 +78,18 @@ namespace BossRush.Systems
 
         // guard against concurrent/rapid summoning calls which can skip or block bosses
         private bool isSummoning = false;
-        public Player[] Players { private get; set; } = [];
+        public Player[] Players { get; private set; } = [];
         public bool Fighting => Phase != BossRushPhase.Intro && Phase != BossRushPhase.None;
 
         public Boss CurrentBoss => allBosses[currentBossIndex];
 
-        // stored in BossRushSystem so they can be editing in game with dragon less
-        #region Boss Difficulty Modifier
+        // stored in BossRushSystem so they can be editing in game with dragon lens
+        #region Boss Difficulty Modifiers
         public static float eocSpeedMultiplier = 1.5f;
         public static float eocMaxSpeed = 18f; // I calcuated this to be around the max speed
         public static float eocMaxDistance = 30f * 16f; // 30 tiles converted to screen coordinates
+        public static float WOFSpeedMultiplier = 2f;
+        public static float WOFMaxSpeed = 10; // calculated heuritically
         #endregion
 
         public void Reset()
@@ -216,6 +219,11 @@ namespace BossRush.Systems
         {
             int spawnX = (int)(chosenPlayer.position.X + Main.rand.Next(-300, 301) + 150);
             int spawnY = (int)(chosenPlayer.position.Y - 600f);
+            if (bossType == NPCID.WallofFlesh)
+            {
+                spawnX = (int)chosenPlayer.position.X;
+                spawnY = (Main.UnderworldLayer + 10) * 16; // spawn where the underworld is usually opened up
+            }
             int spawnedIndex = NPC.NewNPC(new EntitySource_BossSpawn(chosenPlayer), spawnX, spawnY, bossType, 1);
 
             Main.NewText($"SummonBoss: NewNPC returned index={spawnedIndex} for bossID={bossType}");
