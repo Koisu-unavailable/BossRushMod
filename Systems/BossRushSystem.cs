@@ -74,7 +74,7 @@ namespace BossRush.Systems
             new Boss(){Type = NPCID.Retinazer, healthMult = 6, DamageMult = 2,
             extraEnemiesToBuff = [NPCID.Spazmatism],
             extraProjectilesToBuff = [ProjectileID.EyeLaser, ProjectileID.CursedFlameHostile, ProjectileID.DeathLaser, ProjectileID.EyeFire]},
-            new Boss(){Type = NPCID.Plantera, healthMult = 5, DamageMult = 1,
+            new Boss(){Type = NPCID.Plantera, healthMult = 4, DamageMult = 1,
             extraEnemiesToBuff = [NPCID.PlanterasHook, NPCID.PlanterasTentacle, NPCID.Spore],
             extraProjectilesToBuff = [ProjectileID.Seed, ProjectileID.PoisonSeedPlantera, ProjectileID.ThornBall]},
             NPCID.Golem,
