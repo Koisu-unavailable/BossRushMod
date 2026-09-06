@@ -77,7 +77,9 @@ namespace BossRush.Systems
             new Boss(){Type = NPCID.Plantera, healthMult = 4, DamageMult = 1,
             extraEnemiesToBuff = [NPCID.PlanterasHook, NPCID.PlanterasTentacle, NPCID.Spore],
             extraProjectilesToBuff = [ProjectileID.Seed, ProjectileID.PoisonSeedPlantera, ProjectileID.ThornBall]},
-            NPCID.Golem,
+            new Boss(){Type = NPCID.Golem, healthMult = 3, DamageMult = 2,
+            extraEnemiesToBuff = [NPCID.GolemHead, NPCID.GolemHeadFree, NPCID.GolemFistLeft, NPCID.GolemFistRight],
+            extraProjectilesToBuff = [ProjectileID.Fireball, ProjectileID.EyeBeam, ProjectileID.GolemFist]},
             NPCID.HallowBoss, // empress of light
             NPCID.DukeFishron,
             NPCID.CultistBoss,
