@@ -80,7 +80,8 @@ namespace BossRush.Systems
             new Boss(){Type = NPCID.Golem, healthMult = 3, DamageMult = 2,
             extraEnemiesToBuff = [NPCID.GolemHead, NPCID.GolemHeadFree, NPCID.GolemFistLeft, NPCID.GolemFistRight],
             extraProjectilesToBuff = [ProjectileID.Fireball, ProjectileID.EyeBeam, ProjectileID.GolemFist]},
-            NPCID.HallowBoss, // empress of light
+            new Boss(){Type = NPCID.HallowBoss, healthMult = 5, DamageMult = 2,
+            extraProjectilesToBuff = [ProjectileID.HallowBossRainbowStreak, ProjectileID.FairyQueenSunDance, ProjectileID.HallowBossLastingRainbow, ProjectileID.FairyQueenLance]},
             NPCID.DukeFishron,
             NPCID.CultistBoss,
             NPCID.MoonLordCore
@@ -225,6 +226,7 @@ namespace BossRush.Systems
                 SummonBoss(NPCID.Spazmatism);
             }
             isSummoning = false;
+            
         }
 
         private int SpawnBossNearPlayer(Player chosenPlayer, int bossType)
