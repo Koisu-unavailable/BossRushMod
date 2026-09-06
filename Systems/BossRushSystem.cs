@@ -46,6 +46,7 @@ namespace BossRush.Systems
             NPCID.CultistBoss,
             NPCID.MoonLordCore
         };
+        // the lion will concern himself with balancing later
         public readonly Boss[] allBosses =
         [
             new Boss(){Type = NPCID.KingSlime, Health = 10000, Damage = 300, extraEnemiesToBuff = [NPCID.SlimeSpiked, NPCID.BlueSlime]},
@@ -80,9 +81,11 @@ namespace BossRush.Systems
             new Boss(){Type = NPCID.Golem, healthMult = 3, DamageMult = 2,
             extraEnemiesToBuff = [NPCID.GolemHead, NPCID.GolemHeadFree, NPCID.GolemFistLeft, NPCID.GolemFistRight],
             extraProjectilesToBuff = [ProjectileID.Fireball, ProjectileID.EyeBeam, ProjectileID.GolemFist]},
-            new Boss(){Type = NPCID.HallowBoss, healthMult = 5, DamageMult = 2,
+            new Boss(){Type = NPCID.HallowBoss, healthMult = 3, DamageMult = 2,
             extraProjectilesToBuff = [ProjectileID.HallowBossRainbowStreak, ProjectileID.FairyQueenSunDance, ProjectileID.HallowBossLastingRainbow, ProjectileID.FairyQueenLance]},
-            NPCID.DukeFishron,
+            new Boss(){Type = NPCID.DukeFishron, healthMult = 1, DamageMult = 1,
+            extraEnemiesToBuff = [NPCID.Sharkron, NPCID.Sharkron2],
+            extraProjectilesToBuff = [ProjectileID.Bubble, ProjectileID.Sharknado, ProjectileID.Cthulunado, ProjectileID.SharknadoBolt]},
             NPCID.CultistBoss,
             NPCID.MoonLordCore
         ];
