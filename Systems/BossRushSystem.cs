@@ -16,10 +16,6 @@ namespace BossRush.Systems
 {
     public class BossRushSystem : ModSystem
     {
-        public readonly long[] banndedItems =
-        [
-            ItemID.RodOfHarmony // probably cheating
-        ];
         public BossRushPhase Phase { get; private set; }
         private static readonly long[] preharmodeBosses =
         {
