@@ -10,7 +10,7 @@ public class BossRushBackGroundStyle : ModSurfaceBackgroundStyle
     public override void Load()
     {
         base.Load();
-        background = Mod.Assets.Request<Texture2D>("Assets/background");
+        background = Mod.Assets.Request<Texture2D>("Assets/space");
     }
     public override void ModifyFarFades(float[] fades, float transitionSpeed)
     {

@@ -1,7 +1,8 @@
 using BossRush.Systems;
 using Microsoft.Xna.Framework;
+using Terraria;
+using Terraria.Audio;
 using Terraria.DataStructures;
-using Terraria.ID;
 using Terraria.ModLoader;
 
 
@@ -10,15 +11,38 @@ public class BossRushPlayer : ModPlayer
 {
     // the previous position of the player before it waas teleported to the WOF
     public Vector2 previousPos;
+    private bool diedDuringBossRush;
+    private SoundStyle reviveSFX;
+    public override void OnEnterWorld()
+    { 
+        reviveSFX = new SoundStyle("BossRush/Assets/Sound/revive", SoundType.Sound);
+    }
+
     public override void Kill(double damage, int hitDirection, bool pvp, PlayerDeathReason damageSource)
     {
         base.Kill(damage, hitDirection, pvp, damageSource);
-        if (ModContent.GetInstance<BossRushSystem>().IsBossRushMode)
+        BossRushSystem bossRushSystem = ModContent.GetInstance<BossRushSystem>();
+        if (bossRushSystem.IsBossRushMode)
         {
-            ModContent.GetInstance<BossRushSystem>().EndBossRush(false);
-            Player.respawnTimer = 30; // half a second
+            diedDuringBossRush = true;
+            bossRushSystem.EndBossRush(false);
+            Player.respawnTimer = 1;  
+        }
+        bool shouldPlayReviveSound = diedDuringBossRush && !bossRushSystem.IsBossRushMode;
+        if (shouldPlayReviveSound && !Main.dedServ && Main.myPlayer == Player.whoAmI)
+        {
+            SoundEngine.PlaySound(reviveSFX);
         }
     }
+
+    public override void OnRespawn()
+    {
+        // BossRushSystem bossRushSystem = ModContent.GetInstance<BossRushSystem>();
+        diedDuringBossRush = false;
+
+        
+    }
+
     public override void PostUpdate()
     {
         base.PostUpdate();
