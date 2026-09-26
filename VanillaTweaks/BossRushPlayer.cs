@@ -7,6 +7,7 @@ using Terraria.ModLoader;
 
 
 namespace BossRush.VanillaTweaks;
+
 public class BossRushPlayer : ModPlayer
 {
     // the previous position of the player before it waas teleported to the WOF
@@ -14,7 +15,7 @@ public class BossRushPlayer : ModPlayer
     private bool diedDuringBossRush;
     private SoundStyle reviveSFX;
     public override void OnEnterWorld()
-    { 
+    {
         reviveSFX = new SoundStyle("BossRush/Assets/Sound/revive", SoundType.Sound);
     }
 
@@ -26,22 +27,24 @@ public class BossRushPlayer : ModPlayer
         {
             diedDuringBossRush = true;
             bossRushSystem.EndBossRush(false);
-            Player.respawnTimer = 1;  
-        }
+            Player.respawnTimer = 1;
+        }}
+
+
+
+    public override void OnRespawn()
+    {
+        BossRushSystem bossRushSystem = ModContent.GetInstance<BossRushSystem>();
+        
         bool shouldPlayReviveSound = diedDuringBossRush && !bossRushSystem.IsBossRushMode;
         if (shouldPlayReviveSound && !Main.dedServ && Main.myPlayer == Player.whoAmI)
         {
             SoundEngine.PlaySound(reviveSFX);
         }
-    }
-
-    public override void OnRespawn()
-    {
-        // BossRushSystem bossRushSystem = ModContent.GetInstance<BossRushSystem>();
         diedDuringBossRush = false;
-
-        
     }
+        
+    
 
     public override void PostUpdate()
     {
