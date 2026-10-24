@@ -46,7 +46,7 @@ namespace BossRush.Systems
         public readonly Boss[] allBosses =
         [
             new Boss(){Type = NPCID.KingSlime, Health = 10000, Damage = 300, extraEnemiesToBuff = [NPCID.SlimeSpiked, NPCID.BlueSlime]},
-            new Boss(){Type = NPCID.EyeofCthulhu, Health = 15000, Damage = 150, PostAI = BossRushModeBoss.EocPostAI, extraEnemiesToBuff = [NPCID.ServantofCthulhu]},
+            new Boss(){Type = NPCID.EyeofCthulhu, Health = 15000, Damage = 100, PostAI = BossRushModeBoss.EocPostAI, extraEnemiesToBuff = [NPCID.ServantofCthulhu]},
             new Boss(){Type = NPCID.Deerclops, healthMult = 3, DamageMult = 5, 
                 extraProjectilesToBuff = [ProjectileID.DeerclopsIceSpike, ProjectileID.DeerclopsRangedProjectile, ProjectileID.InsanityShadowHostile]},
             new Boss(){Type = NPCID.QueenBee, healthMult = 5, DamageMult = 2, extraProjectilesToBuff = [ProjectileID.QueenBeeStinger], extraEnemiesToBuff = [NPCID.Bee]},
@@ -59,7 +59,7 @@ namespace BossRush.Systems
             new Boss(){Type = NPCID.WallofFlesh, healthMult = 10, DamageMult = 3, 
             extraEnemiesToBuff = [NPCID.TheHungry, NPCID.TheHungryII, NPCID.FireImp, NPCID.BurningSphere, NPCID.LeechBody, NPCID.LeechHead, NPCID.LeechTail], 
             extraProjectilesToBuff = [ProjectileID.EyeBeam], PostAI = BossRushModeBoss.WofPostAI, OnKill = BossRushModeBoss.OnWOFKill},
-            new Boss(){Type = NPCID.QueenSlimeBoss, healthMult = 10, DamageMult = 2,
+            new Boss(){Type = NPCID.QueenSlimeBoss, healthMult = 8, DamageMult = 2,
             extraEnemiesToBuff = [NPCID.QueenSlimeMinionBlue, NPCID.QueenSlimeMinionPink, NPCID.QueenSlimeMinionPurple],
             extraProjectilesToBuff = [ProjectileID.QueenSlimeMinionBlueSpike, ProjectileID.QueenSlimeMinionPinkBall, ProjectileID.QueenSlimeSmash]},
             new Boss(){Type = NPCID.TheDestroyer, healthMult = 6, DamageMult = 2,

@@ -33,7 +33,12 @@ public class BossRushIntro : Cutscene
     public override void OnBegin()
     {
         Main.NewText(Language.GetText("Mods.BossRush.Misc.Dizzy").ToString(), new Color(175, 75, 255));
-        var shader = Mod.Assets.Request<Effect>("Assets/AutoloadedEffects/Filters/blink");
+        var bossRushMod = ModContent.GetInstance<BossRush>();
+        var shader = bossRushMod.Assets.Request<Effect>("Assets/Shaders/AutoloadedEffects/Filters/blink");
+        if (shader == null)
+        {
+            Main.NewText("JKSSKJJKkkdakdsakdsksdksdkkkk");
+        }
         ShaderManager.SetFilter("blink", new Ref<Effect>(shader.Value));
         if (!ShaderManager.TryGetFilter("blink", out blinkShader))
         {
@@ -41,7 +46,7 @@ public class BossRushIntro : Cutscene
             return;
         }
 
-        blinkShader.TrySetParameter("colour", new Vector4(1, 1, 1, 1));
+        blinkShader.TrySetParameter("colour", new Vector4(1, 0.5f, 1, 1));
     }
     override public void Update()
     {
@@ -51,8 +56,8 @@ public class BossRushIntro : Cutscene
     public override void OnEnd()
     {
         Main.blockInput = false;
-        OnCutsceneEnd?.Invoke();
         blinkShader?.Deactivate();
+        OnCutsceneEnd?.Invoke();
         // SoundEngine.PlaySound(alert);
     }
 }
